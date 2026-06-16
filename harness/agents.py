@@ -34,11 +34,24 @@ class ModelAgent:
 
     def __init__(self, cfg):
         import torch
-        from transformers import AutoTokenizer, AutoModelForCausalLM
         self.cfg = cfg
+        """
+        from transformers import AutoTokenizer, AutoModelForCausalLM
         self.tok = AutoTokenizer.from_pretrained(cfg.model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
             cfg.model_name, dtype=torch.bfloat16, device_map=cfg.device)
+            
+        """
+
+        from transformers import AutoProcessor, AutoModelForImageTextToText
+        self.model = AutoModelForImageTextToText.from_pretrained(
+            cfg.model_name,
+            dtype=torch.bfloat16,
+            device_map="auto",          # or cfg.device if you know it is supported
+        )
+
+        self.processor = AutoProcessor.from_pretrained(cfg.model_name)
+
         self.model.eval()
         self.device = cfg.device
 
@@ -52,14 +65,21 @@ class ModelAgent:
                 m = {"role": "user", "content": sys_txt + "\n\n" + m["content"]}
                 sys_txt = None
             msgs.append(m)
-        out = self.tok.apply_chat_template(
-            msgs, add_generation_prompt=True, return_tensors="pt")
-        # transformers >=5 returns a BatchEncoding (dict-like); older returns a
-        # bare tensor. Normalise to an input_ids tensor.
+        out = self.processor.apply_chat_template(
+            msgs,
+            tokenize=True,
+            add_generation_prompt=True,
+            return_dict=True,
+            return_tensors="pt",
+        )
+        
+
         if hasattr(out, "keys"):
             out = out["input_ids"]
-        return out.to(self.device)
 
+        return out.to(self.model.device)
+
+  
     def _action_stopper(self, prompt_len):
         """StoppingCriteria that halts as soon as one COMPLETE action line
         (newline-terminated SET.../SUBMIT) appears in the generated text.
@@ -67,7 +87,7 @@ class ModelAgent:
         from transformers import StoppingCriteria, StoppingCriteriaList
         import torch
         from .dsl import parse_action
-        tok = self.tok
+        tok = self.processor
 
         class _ActionStop(StoppingCriteria):
             def __call__(self, input_ids, scores=None, **kw):
@@ -92,7 +112,7 @@ class ModelAgent:
         return self.model.generate(
             ids, max_new_tokens=max_new,
             do_sample=self.cfg.temperature > 0, temperature=self.cfg.temperature,
-            pad_token_id=self.tok.eos_token_id,
+            pad_token_id=self.processor.tokenizer.eos_token_id,
             attention_mask=torch.ones_like(ids),     # silences the attn-mask warning
             stopping_criteria=stopper)
 
@@ -104,7 +124,7 @@ class ModelAgent:
         full = self._generate(ids, self.cfg.max_new_tokens,
                               self._action_stopper(prompt_len))
 
-        text = self.tok.decode(full[0, prompt_len:], skip_special_tokens=True).strip()
+        text = self.processor.decode(full[0, prompt_len:], skip_special_tokens=True).strip()
         meta = {"source": "model", "prompt_len": int(prompt_len),
                 "resp_len": int(full.shape[1] - prompt_len),
                 "temperature": self.cfg.temperature}

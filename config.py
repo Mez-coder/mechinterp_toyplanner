@@ -31,7 +31,7 @@ class RunConfig:
     constraint_tighten_frac: float = 0.0  # mean shift of limit BELOW baseline (the difficulty dial)
 
     # model (ignored in --human mode)
-    model_name: str = "google/medgemma-1.5-4b-it"
+    model_name: str = "Qwen/Qwen3.5-9B"
     device: str = "auto"
     temperature: float = 0.7
     max_new_tokens: int = 512

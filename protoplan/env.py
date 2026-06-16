@@ -76,7 +76,7 @@ class PlanningEnv:
     # ------------------------------------------------------ baseline plan
     def _baseline(self, steps=200):
         for o in self.objectives:
-            o['weight'] = (200 if o['metric'] == 'D98%' else 100) if o['structure'] == 'CTV' else 0
+            o['weight'] = (1 if o['metric'] == 'D98%' else 0.5) if o['structure'] == 'CTV' else 0
         self.weights = np.zeros(self.geom.n_spots)
         self._solve(steps, warm=False)
         self.baseline = dict(dose=self.dose.copy(), weights=self.weights.copy(),
@@ -103,8 +103,8 @@ class PlanningEnv:
         self.struct_idx = {k: np.flatnonzero(m.ravel()) for k, m in self.structures.items()}
 
         self.objectives = [
-            {"structure": "CTV", "metric": "D2%",  "direction": "upper", "limit": 105, "weight": 100},
-            {"structure": "CTV", "metric": "D98%", "direction": "lower", "limit": 100, "weight": 200},
+            {"structure": "CTV", "metric": "D2%",  "direction": "upper", "limit": 107, "weight": 1},
+            {"structure": "CTV", "metric": "D98%", "direction": "lower", "limit": 95, "weight": 1},
         ]
         self.oar_metric = {}
         for name in self.structures:
