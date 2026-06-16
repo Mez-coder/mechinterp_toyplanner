@@ -38,8 +38,9 @@ class RunConfig:
 
     # activation capture
     capture: bool = True
-    capture_tokens: str = "assistant"   # 'decision' | 'assistant'
-    capture_dtype: str = "float16"
+    capture_tokens: str = "lastk"       # 'decision' | 'lastk' | 'assistant'
+    capture_last_k: int = 5             # tokens kept when capture_tokens=='lastk'
+    capture_dtype: str = "float16"      # 'bfloat16' (lossless, needs ml_dtypes) | 'float32' | 'float16'
 
     def run_dir(self):
         import os
