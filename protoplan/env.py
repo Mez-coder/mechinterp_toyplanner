@@ -27,9 +27,9 @@ OAR_METRICS = ['D2%', 'D5%', 'D20%', 'D50%', 'mean']
 
 
 class PlanningEnv:
-    def __init__(self, Rx=54.0, geom: Geometry2D | None = None,
-                 slice_thickness_mm=2.0, cov_tol_pct=2.0,
-                 constraint_sigma_frac=0.1, constraint_tighten_frac=0.0,
+    def __init__(self, Rx=50.4, geom: Geometry2D | None = None,
+                 slice_thickness_mm=2.0, cov_tol_pct=0.0,
+                 constraint_sigma_frac=0.0, constraint_tighten_frac=0.0,
                  n_oar=None, oar_overlap_bias=0.0, **geom_kwargs):
         self.Rx = Rx
         self.cov_tol_pct = cov_tol_pct

@@ -16,10 +16,10 @@ coverage; raising CTV98 defends coverage. The optimiser re-solves after every ch
 and shows you the resulting doses (status OK = within limit, 'cover!' = coverage lost).
 
 Each turn you take exactly ONE action (SET or SUBMIT):
-  SET OAR1=5.0, OAR2=3.0, CTV98=100    -> set those weights and re-optimise (you then see new doses)
+  SET OAR1=5.0, OAR2=3.0, CTV98=1    -> set those weights and re-optimise (you then see new doses)
   SUBMIT                    -> finalise the current plan and finish
 
-Your goal: get every OAR at or below its limit while keeping the tumour covered. \
+Your goal: get every OAR at or below its limit while keeping the tumour covered (d98 > limit and d2 < limit). \
 Submit once you are satisfied with the plan. Reply with only the action."""
 
 
